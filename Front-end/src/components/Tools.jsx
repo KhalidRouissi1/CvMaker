@@ -32,14 +32,14 @@ export default function Tools({ onColorChange }) {
         </form>
       </div>
       <div
-        className="flex items-center justify-center w-28 h-28 rounded-xl relative left-96 bottom-20 capitalize text-white"
+        className="flex items-center justify-center w-28 h-12 rounded-xl relative left-96 bottom-20 capitalize text-white"
         style={{ backgroundColor: color }}
       >
         selected color
       </div>
 
       <div
-        className="flex items-center justify-center w-28 h-28 rounded-xl relative left-96 bottom-20 capitalize text-white"
+        className="flex items-center justify-center w-28 h-12 mt-2 rounded-xl relative left-96 bottom-20 capitalize text-white bg-blue-500 p-2 "
         onClick={handelSaving}
       >
         Save your cv
