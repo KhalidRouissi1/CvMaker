@@ -1,6 +1,8 @@
 // FormComponent.js
 import React from "react";
 import MyDocument from "./MyDocument";
+import MyDocument2 from "./MyDocument2";
+import MyDocument3 from "./MyDocument3";
 import { PDFViewer } from "@react-pdf/renderer";
 import { IoAddOutline } from "react-icons/io5";
 import Tools from "../Tools";
@@ -45,6 +47,21 @@ const FormComponent = ({
   popup,
   color,
 }) => {
+  const getDocumentComponent = () => {
+    const templateId = localStorage.getItem("template");
+    switch (templateId) {
+      case "2":
+        return MyDocument2;
+      case "3":
+        return MyDocument3;
+      case "1":
+      default:
+        return MyDocument;
+    }
+  };
+
+  const DocumentComponent = getDocumentComponent();
+
   return (
     <>
       {popup && (
@@ -353,7 +370,7 @@ const FormComponent = ({
                 borderRadius: "8px",
               }}
             >
-              <MyDocument
+              <DocumentComponent
                 firstName={firstName}
                 lastName={lastName}
                 Eaddress={Eaddress}

@@ -18,16 +18,59 @@ const PdfViewer = React.memo(() => {
   const [indexSkill, setIndexSkill] = useState(0);
   const [popup, setPopup] = useState(false);
   const [color, setColor] = useState("#7c6ed5");
-  const [skills, setSkills] = useState([""]);
-  const [projects, setProjects] = useState([
-    {
-      projectName: "",
-      description: "",
-    },
-  ]);
+  const [skills, setSkills] = useState([]);
+  const [projects, setProjects] = useState([]);
   const { idUser } = useContext(UserContext);
   const token = localStorage.getItem("token");
 
+  // Fetch CV data on component mount
+  useEffect(() => {
+    const fetchCVData = async () => {
+      try {
+        const response = await fetch("http://localhost:8088/api/v1/auth/myCv", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setName(data.name || "");
+          setLastName(data.lastName || "");
+          setEmail(data.email || "");
+          setPhone(data.phone || "");
+          setAboutMe(data.aboutMe || "");
+          setSchool(data.education?.school || "");
+          setSchoolDescription(data.education?.description || "");
+          setDegree(data.education?.degree || "");
+          setYear(data.education?.year || "");
+          setColor(data.color || "#7c6ed5");
+          setSkills(data.skills?.map((skill) => skill.skillName) || []);
+          setProjects(
+            data.workExperience?.map((exp) => ({
+              projectName: exp.projectName,
+              description: exp.description,
+            })) || []
+          );
+        } else {
+          console.error("Failed to fetch CV data");
+        }
+      } catch (error) {
+        console.error("Error fetching CV data:", error);
+      }
+    };
+
+    fetchCVData();
+  }, [token]);
+
+  // Save skills and projects to local storage on each change
+  useEffect(() => {
+    localStorage.setItem("skills", JSON.stringify(skills));
+    localStorage.setItem("projects", JSON.stringify(projects));
+  }, [skills, projects]);
+
+  // Other existing useEffect for updating CV
   useEffect(() => {
     const updateCV = async () => {
       try {
@@ -38,6 +81,23 @@ const PdfViewer = React.memo(() => {
 
         const cvSkills = skills.map((skill) => ({ skillName: skill }));
 
+        const cvJsonData = {
+          name,
+          lastName,
+          email,
+          phone,
+          aboutMe,
+          color,
+          education: {
+            school,
+            degree,
+            year,
+            description: schoolDescription,
+          },
+          workExperience,
+          skills: cvSkills,
+        };
+
         const response = await fetch(`http://localhost:8088/api/v1/auth/myCv`, {
           method: "GET",
           headers: {
@@ -47,27 +107,10 @@ const PdfViewer = React.memo(() => {
 
         if (response.ok) {
           const data = await response.json();
-          const cvJsonData = {
-            name,
-            lastName,
-            email,
-            phone,
-            aboutMe,
-            color,
-            education: {
-              school,
-              degree,
-              year,
-              description: schoolDescription,
-            },
-            workExperience,
-            skills: cvSkills,
-          };
-          const cvId = data.id; // Assuming id is retrieved from the response
           const updateResponse = await fetch(
             `http://localhost:8088/api/v1/cv/${data.id}`,
             {
-              method: "PATCH",
+              method: "PUT",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
@@ -77,16 +120,12 @@ const PdfViewer = React.memo(() => {
           );
 
           if (updateResponse.ok) {
-            // CV updated successfully
-            console.log(cvId);
             console.log("CV updated successfully");
             console.log(JSON.stringify(cvJsonData));
           } else {
-            // Handle error
             console.error("Failed to update CV");
           }
         } else {
-          // Handle error
           console.error("Failed to fetch CV ID");
         }
       } catch (error) {
@@ -124,7 +163,7 @@ const PdfViewer = React.memo(() => {
     setMode("projects");
   };
 
-  const addInputProjucts = () => {
+  const addInputProjects = () => {
     const newProject = { projectName: "", description: "" };
     setProjects([...projects, newProject]);
   };
@@ -256,10 +295,9 @@ const PdfViewer = React.memo(() => {
           deleteInputProjects={deleteInputProjects}
           handleProjectDescriptionChange={handleProjectDescriptionChange}
           handleProjectNameChange={handleProjectNameChange}
-          addInputProjects={addInputProjucts}
-          showPopupProject={showPopupProject}
+          addInputProjects={addInputProjects}
           showPopup={showPopup}
-          setPopup={setPopup}
+          showPopupProject={showPopupProject}
         />
       </div>
     </div>

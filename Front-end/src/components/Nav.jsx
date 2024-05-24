@@ -7,16 +7,8 @@ export default function Nav() {
   const { name, setName } = useContext(UserContext);
 
   const logout = async () => {
-    try {
-      await fetch("http://localhost:8088/api/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-      setName("");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+    localStorage.clear();
+    window.location.pathname = "/";
   };
 
   return (
